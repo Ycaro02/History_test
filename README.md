@@ -10,7 +10,7 @@ This script transfers all Git history from one repository to another. It clones 
 
 ### Arguments
 
-- <source_repo_url>: URL of the source repository whose history needs to be transferred.
+- <source_repo_url>:      URL of the source repository whose history needs to be transferred.
 - <destination_repo_url>: URL of the destination repository where the history needs to be transferred
 
 
@@ -34,4 +34,4 @@ If the destination repository is not empty and the user chooses to force the pus
 
 ### Author
 
-- Ycaro02# copy_git_history
+- Ycaro02
