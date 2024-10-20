@@ -24,25 +24,25 @@ function log_and_read() {
 
 function set_global_variable() {
 	log_and_read "Do you want to skip the year? (Y/n) : " answer
-	if [[ "$answer" == "n" || "$answer" == "N" ]]; then
+	if [[ "${answer}" == "n" || "${answer}" == "N" ]]; then
 		SKIP_YEAR="false"
 	fi
 
-	log_and_read "Do you want to change the author name, currently: $AUTHOR_NAME (y/N) : " answer
-	if [[ "$answer" == "y" || "$answer" == "Y" ]]; then
+	log_and_read "Do you want to change the author name, currently: ${YELLOW}${AUTHOR_NAME}${RESET} (y/N) : " answer
+	if [[ "${answer}" == "y" || "${answer}" == "Y" ]]; then
 		log_and_read "New author name : " new_author_name
 		AUTHOR_NAME="${new_author_name}"
 	fi
 
-	log_and_read "Do you want to change the author email, currently: $AUTHOR_EMAIL (y/N) : " answer
-	if [[ "$answer" == "y" || "$answer" == "Y" ]]; then
+	log_and_read "Do you want to change the author email, currently: ${YELLOW}${AUTHOR_EMAIL}${RESET} (y/N) : " answer
+	if [[ "${answer}" == "y" || "${answer}" == "Y" ]]; then
 		log_and_read "New author email : " new_author_email
 		AUTHOR_EMAIL="${new_author_email}"
 	fi    
 
-	log I "Author name: $AUTHOR_NAME \n"
-	log I "Author email: $AUTHOR_EMAIL \n"
-	log D "Skip year: $SKIP_YEAR \n"
+	log I "Author name: ${YELLOW}${AUTHOR_NAME}${RESET} \n"
+	log I "Author email: ${YELLOW}${AUTHOR_EMAIL}${RESET} \n"
+	log D "Skip year: ${SKIP_YEAR} \n"
 
 	export GIT_AUTHOR_NAME="${AUTHOR_NAME}"
 	export GIT_AUTHOR_EMAIL="${AUTHOR_EMAIL}"
@@ -86,7 +86,6 @@ function build_new_date() {
 }
 
 function extract_data() {
-	old_date=$(git show -s --format=%ai "$commit_hash")
 	timezone=$(echo "$old_date" | awk '{print $3}')
 	old_year=$(echo "$old_date" | awk -F '-' '{print $1}')
 	old_month=$(echo "$old_date" | awk -F '-' '{print $2}')
@@ -104,7 +103,8 @@ function main_loop() {
 	IFS=$'\n'
 	for line in $DATA; do 
 		commit_hash=$(echo "$line" | awk '{print $2}')
-		commit_message=$(echo "$line" | cut -d' ' -f3-)
+		commit_message=$(echo "$line" | cut -d' ' -f3-)\
+		old_date=$(git show -s --format=%ai "$commit_hash")
 		extract_data
 		build_new_date
 		edit_commit_history
