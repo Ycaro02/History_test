@@ -35,3 +35,7 @@ If the destination repository is not empty and the user chooses to force the pus
 ### Author
 
 - Ycaro02
+
+### License
+
+- This script is licensed under the MIT License.
