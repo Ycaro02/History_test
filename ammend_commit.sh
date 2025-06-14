@@ -1,6 +1,16 @@
 #!/bin/bash
 
-BASH_LOG_PATH=~/.local/sh/bash_log.sh
+if [[ -z $BASH_LOG_PATH ]] ; then 
+	echo Use default path for BASH_LOG_PATH: ~/.local/sh/bash_log.sh   
+	BASH_LOG_PATH=~/.local/sh/bash_log.sh
+else 
+	echo Using custom BASH_LOG_PATH: $BASH_LOG_PATH
+fi
+
+if [[ ! -f $BASH_LOG_PATH ]] ; then
+	echo "BASH_LOG_PATH file not found at $BASH_LOG_PATH. Please create it or set the correct path."
+	exit 1
+fi
 
 source $BASH_LOG_PATH
 
