@@ -19,14 +19,12 @@ tmpfile=".tmp_commit_file"
 
 export GIT_EDITOR=true
 
-if [[ -n "$1" ]]; then
-    start_commit="$1"
-    log I "Starting amendments from commit hash: ${start_commit} \n"
-    git log --reverse --pretty=format:"edit %H %s" "${start_commit}^..HEAD" > "${tmpfile}"
-else
-    log I "Starting amendments from the first commit \n"
-    git log --reverse --pretty=format:"edit %H %s" > "${tmpfile}"
+if [[ ! -z "$1" ]]; then
+	start_commit="$1"
+	log I "Starting from commit: ${YELLOW}${start_commit}${RESET} \n"
 fi
+
+git log --reverse --pretty=format:"edit %H %s" > "${tmpfile}"
 
 DATA=$(cat "${tmpfile}")
 
@@ -34,6 +32,10 @@ DATA=$(cat "${tmpfile}")
 AUTHOR_NAME=$(git config user.name)
 AUTHOR_EMAIL=$(git config user.email)
 SKIP_YEAR="true"
+
+function print_minus_line() {
+	echo "--------------------------------------------------"
+}
 
 function log_and_read() {
     local prompt_message="$1"
@@ -73,10 +75,12 @@ function set_global_variable() {
 
 function edit_commit_history() {
 	log I "Amending commit $commit_hash with new date ${new_date} \n"
+	
+	print_minus_line
 
-    GIT_AUTHOR_DATE="${new_date}" GIT_COMMITTER_DATE="${new_date}" git commit --amend --no-edit --date "${new_date}" --reset-author
+    GIT_AUTHOR_DATE="${new_date}" GIT_COMMITTER_DATE="${new_date}" git commit --amend --no-edit --date "${new_date}" --reset-author  >> /tmp/ammend_log 2>&1
 
-    if ! git rebase --continue > /dev/null 2>&1 ; then
+    if ! git rebase --continue >> /tmp/ammend_log 2>&1 ; then
         log E "Rebase failed. Resolve conflicts and run 'git rebase --continue' manually. \n"
         exit 1
     fi
@@ -84,6 +88,8 @@ function edit_commit_history() {
 
 
 function build_new_date() {
+	print_minus_line
+	
 	log I "Editing commit, press Enter to not change the value \n"
 	if [[ ${SKIP_YEAR} != "true" ]]; then
 		log_and_read "Year [$old_year] : " new_year
@@ -119,18 +125,29 @@ function extract_data() {
 }
 
 function main_loop() {
+	skip="true"
 
 	IFS=$'\n'
 	for line in $DATA; do 
 		commit_hash=$(echo "$line" | awk '{print $2}')
 		commit_message=$(echo "$line" | cut -d' ' -f3-)\
 		old_date=$(git show -s --format=%ai "$commit_hash")
+		# Skip commits until the specified hash is reached
+        if [[ ! -z "$start_commit" && "$commit_hash" != "$start_commit" && "$skip" == "true" ]]; then
+            log I "Skipping commit $commit_hash |$commit_message| \n"
+			new_date="${old_date}"
+			edit_commit_history > /dev/null 2>&1
+			continue
+		fi
+        skip=false
 		extract_data
 		build_new_date
 		edit_commit_history
 	done
 }
 
+
+rm /tmp/ammend_log
 
 set_global_variable
 
