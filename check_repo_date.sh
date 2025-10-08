@@ -99,6 +99,7 @@ function check_git_date() {
 
     if [ ${hour} -lt ${START_HOUR} ] || [ ${hour} -gt ${END_HOUR} ]; then
         echo 0
+        return ;
     fi
     echo 1
 }
